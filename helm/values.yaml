@@ -1,0 +1,216 @@
+# Default values for test-hms-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: apache/hive
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "4.1.0"
+
+# Command to run in the container. If specified, overrides the ENTRYPOINT of the image.
+# More information: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#define-a-command-and-arguments-when-you-create-a-pod
+command: []
+# - "/bin/sh"
+# - "-c"
+
+# Arguments to pass to the command. If command is not specified, these will be passed to the default entrypoint.
+# More information: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#define-a-command-and-arguments-when-you-create-a-pod
+args: []
+# - "echo"
+# - "Hello World"
+
+# Environment variables to pass to the container.
+# More information: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+env:
+  - name: SERVICE_NAME
+    value: "metastore"
+  - name: SERVICE_OPTS
+    value: "-Dlog4j.configurationFile=/hive_custom_conf/log4j.properties"
+  - name: HADOOP_OPTIONAL_TOOLS
+    value: "hadoop-azure"
+  - name: HADOOP_CONF_DIR
+    value: "/hive_custom_conf"
+# - name: MY_ENV_VAR
+#   value: "my-value"
+# - name: ANOTHER_VAR
+#   valueFrom:
+#     secretKeyRef:
+#       name: my-secret
+#       key: password
+
+# Environment variables from ConfigMaps or Secrets.
+# More information: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/#define-an-environment-variable-for-a-container
+envFrom: []
+# - configMapRef:
+#     name: my-configmap
+# - secretRef:
+#     name: my-secret
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "service-account-hms"
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 9083
+  # Name of the port (used for port references in probes, etc.)
+  portName: metastore
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+    # - secretName: chart-example-tls
+    #   hosts:
+    #     - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  # httpGet:
+  #   path: /
+  #   port: metastore
+  tcpSocket:
+    port: metastore
+readinessProbe:
+  # httpGet:
+  #   path: /
+  #   port: metastore
+  tcpSocket:
+    port: metastore
+
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# ConfigMap for configuration files
+# More information: https://kubernetes.io/docs/concepts/configuration/configmap/
+configMap:
+  # Set to true to create a ConfigMap from the data/files below
+  enabled: false
+  name: hms-config-map
+  # Configuration data as key-value pairs (files will be created with the key as filename)
+  # Use 'data' for multi-line content, 'files' for single-line content
+  data: {}
+  # Example:
+  #   log4j.properties: |
+  #     log4j.rootLogger=INFO, console
+  #     log4j.appender.console=org.apache.log4j.ConsoleAppender
+  #   core-site.xml: |
+  #     <?xml version="1.0"?>
+  #     <configuration>
+  #       <property>
+  #         <name>fs.defaultFS</name>
+  #         <value>hdfs://namenode:9000</value>
+  #       </property>
+  #     </configuration>
+  # Single-line file content
+  files: {}
+  # Example:
+  #   hive-site.xml: "<configuration><property><name>hive.metastore.uris</name><value>thrift://localhost:9083</value></property></configuration>"
+
+# Additional volumes on the output Deployment definition.
+# More information: https://kubernetes.io/docs/concepts/storage/volumes/
+volumes:
+  - name: hive-config
+    configMap:
+      name: hms-config-map
+      items:
+        - key: core-site.xml
+          path: core-site.xml
+
+# Example for mounting the ConfigMap created by this chart:
+# - name: hive-config
+#   configMap:
+#     name: release-name-test-hms-chart-config
+#     # Optional: mount only specific keys
+#     # items:
+#     #   - key: log4j.properties
+#     #     path: log4j.properties
+# Example for mounting an existing ConfigMap:
+# - name: hive-config
+#   configMap:
+#     name: my-existing-configmap
+
+# Additional volumeMounts on the output Deployment definition.
+# More information: https://kubernetes.io/docs/concepts/storage/volumes/
+volumeMounts:
+  - name: hive-config
+    mountPath: "/hive_custom_conf"
+    readOnly: true
+
+# Example for mounting the ConfigMap volume at /hive_custom_conf:
+# - name: hive-config
+#   mountPath: "/hive_custom_conf"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

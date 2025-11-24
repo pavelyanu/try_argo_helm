@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "test-hms-chart.fullname" . }}
+  labels:
+    {{- include "test-hms-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.portName | default "metastore" }}
+      protocol: TCP
+      name: {{ .Values.service.portName | default "metastore" }}
+  selector:
+    {{- include "test-hms-chart.selectorLabels" . | nindent 4 }}
