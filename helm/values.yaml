@@ -152,11 +152,13 @@ autoscaling:
 # More information: https://kubernetes.io/docs/concepts/configuration/configmap/
 configMap:
   # Set to true to create a ConfigMap from the data/files below
-  enabled: false
+  enabled: true
   name: hms-config-map
   # Configuration data as key-value pairs (files will be created with the key as filename)
   # Use 'data' for multi-line content, 'files' for single-line content
-  data: {}
+  data:
+    core-site.xml: |
+      dummy config
   # Example:
   #   log4j.properties: |
   #     log4j.rootLogger=INFO, console

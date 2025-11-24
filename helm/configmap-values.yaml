@@ -1,6 +1,0 @@
-configMap:
-  enabled: true
-  name: hms-config-map
-  data: {}
-  files: {}
-
